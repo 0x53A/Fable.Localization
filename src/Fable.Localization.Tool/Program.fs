@@ -480,8 +480,8 @@ open Printf
     {
         TxtPath = input.TxtFilePath
         LogicalName = input.LogicalName
-        FsPath = input.SourceOutputFilePath
-        ResxPath = input.ResourceOutputFilePath
+        FsPath = outFilename
+        ResxPath = outXmlFilename
         AutoIncludeFs = if autoIncludeFs then "true" else "false"
         AutoIncludeResx = if autoIncludeResx then "true" else "false"
     }
