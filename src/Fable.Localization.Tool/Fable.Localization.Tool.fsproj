@@ -28,7 +28,7 @@
   <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences">
     <ItemGroup>
       <!-- Note: this is too much, just FSharp.Core should be enough, but whatever -->
-      <BuildOutputInPackage Include="@(Reference)" />
+      <BuildOutputInPackage Include="%(Reference.Identity)" Condition=" '%(Reference.Filename)' == 'FSharp.Core' " />
     </ItemGroup>
   </Target>
 
