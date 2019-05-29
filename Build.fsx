@@ -56,7 +56,7 @@ let justBuild() =
 
     do
         let props = ["NuspecFile","nuspec\\Fable.Localization.nuspec"; "nuspecproperties",sprintf"version=%s" v;"PackageOutputPath",(root @@ "nupkg")]
-        DotNet.msbuild (fun o -> { o with MSBuildParams = { o.MSBuildParams with Targets=["Restore";"Build"];Properties = props }}) (root @@ "src\\Fable.Localization\\Fable.Localization.csproj")
+        DotNet.msbuild (fun o -> { o with MSBuildParams = { o.MSBuildParams with Targets=["Restore"];Properties = props }}) (root @@ "src\\Fable.Localization\\Fable.Localization.csproj")
         DotNet.msbuild (fun o -> { o with MSBuildParams = { o.MSBuildParams with Targets=["pack"];Properties = props }}) (root @@ "src\\Fable.Localization\\Fable.Localization.csproj")
 
 let publishToNuget(v:string) =
@@ -67,7 +67,7 @@ let publishToNuget(v:string) =
     
     do
         let props = ["NuspecFile","nuspec\\Fable.Localization.nuspec"; "nuspecproperties",sprintf"version=%s" v;"PackageOutputPath",(root @@ "nupkg")]
-        DotNet.msbuild (fun o -> { o with MSBuildParams = { o.MSBuildParams with Targets=["Restore";"Build"];Properties = props }}) (root @@ "src\\Fable.Localization\\Fable.Localization.csproj")
+        DotNet.msbuild (fun o -> { o with MSBuildParams = { o.MSBuildParams with Targets=["Restore"];Properties = props }}) (root @@ "src\\Fable.Localization\\Fable.Localization.csproj")
         DotNet.msbuild (fun o -> { o with MSBuildParams = { o.MSBuildParams with Targets=["pack"];Properties = props }}) (root @@ "src\\Fable.Localization\\Fable.Localization.csproj")
 
     let nupkgs = [|
