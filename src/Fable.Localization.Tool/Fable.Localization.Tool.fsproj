@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsTool>true</IsTool>
+    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
+    
+    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+    <DisableImplicitSystemValueTupleReference>true</DisableImplicitSystemValueTupleReference>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="build/Fable.Localization.Tool.targets" Pack="true" PackagePath="build" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="FSharp.Core" Version="4.6.2" />
+  </ItemGroup>
+
+  <!-- workaround for https://github.com/nuget/home/issues/3891 -->
+  <PropertyGroup>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+  </PropertyGroup>
+  <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <!-- Note: this is too much, just FSharp.Core should be enough, but whatever -->
+      <BuildOutputInPackage Include="@(Reference)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

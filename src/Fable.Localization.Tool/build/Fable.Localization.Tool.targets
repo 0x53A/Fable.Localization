@@ -1,0 +1,67 @@
+<Project>
+
+  <ItemGroup>
+    <_FableLocalizationOutputs Include="@(FableLocalizedText->'%(SourceOutputFilePath)')" Condition=" '%(FableLocalizedText.SourceOutputFilePath)' != '' " />
+    <_FableLocalizationOutputs Include="@(FableLocalizedText->'$(IntermediateOutputPath)%(Identity).fs')" Condition=" '%(FableLocalizedText.SourceOutputFilePath)' == '' " />
+    
+    <_FableLocalizationOutputs Include="@(FableLocalizedText->'%(ResourceOutputFilePath)')" Condition=" '%(FableLocalizedText.ResourceOutputFilePath)' != '' " />
+    <_FableLocalizationOutputs Include="@(FableLocalizedText->'$(IntermediateOutputPath)%(Identity).resx')" Condition=" '%(FableLocalizedText.ResourceOutputFilePath)' == '' " />
+  </ItemGroup>
+
+  <Target
+    Name="Fable_Localization_BuildResxAndSourceFromTxt"
+    BeforeTargets="CoreResGen;PrepareForBuild"
+    AfterTargets="GenerateFSharpTextResources"
+    Inputs="@(FableLocalizedText)"
+    Outputs="@(_FableLocalizationOutputs)">
+    
+    <MakeDir Directories="$(IntermediateOutputPath)" />
+
+    <PropertyGroup>
+      <_FableLocToolDllPath>$(MSBuildThisFileDirectory)../tools/Fable.Localization.Tool.dll</_FableLocToolDllPath>
+      <_ResponseFilePath>$([System.IO.Path]::GetTempFileName())</_ResponseFilePath>
+      <_OutFilePath>$([System.IO.Path]::GetTempFileName())</_OutFilePath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_ResponseFileLines Include="@(FableLocalizedText->'%(Identity);%(LogicalName);%(SourceVisibility);%(SourceOutputFilePath);%(ResourceOutputFilePath)')" />
+    </ItemGroup>
+
+    <WriteLinesToFile File="$(_ResponseFilePath)" Lines="@(_ResponseFileLines)" Overwrite="true" />
+
+    <!-- first arg is the IN file, second arg is the OUT file, third arg is obj dir -->
+    <Exec Command="dotnet $(_FableLocToolDllPath) $(_ResponseFilePath) $(_OutFilePath) $(IntermediateOutputPath)" />
+    
+    <!-- read result and pass to msbuild -->
+    <ReadLinesFromFile File="$(_OutFilePath)" >
+      <Output TaskParameter="Lines" ItemName="_FableLocResultLines"/>
+    </ReadLinesFromFile>
+    
+    <ItemGroup>
+      
+      <_FableLocResult Include="@(_FableLocResultLines)" >
+        <TxtPath>$([System.String]::Copy('%(_FableLocResultLines.Identity)').Split(';')[0])</TxtPath>
+        <LogicalName>$([System.String]::Copy('%(_FableLocResultLines.Identity)').Split(';')[1])</LogicalName>
+        <FsPath>$([System.String]::Copy('%(_FableLocResultLines.Identity)').Split(';')[2])</FsPath>
+        <ResxPath>$([System.String]::Copy('%(_FableLocResultLines.Identity)').Split(';')[3])</ResxPath>
+        <AutoIncludeFs>$([System.String]::Copy('%(_FableLocResultLines.Identity)').Split(';')[4])</AutoIncludeFs>
+        <AutoIncludeResx>$([System.String]::Copy('%(_FableLocResultLines.Identity)').Split(';')[5])</AutoIncludeResx>
+      </_FableLocResult>
+      
+    </ItemGroup>
+
+    <ItemGroup>
+      <CompileBefore Include="%(_FableLocResult.FsPath)" Condition="'%(_FableLocResult.AutoIncludeFs)' == 'true'" />
+      <EmbeddedResource Include="%(_FableLocResult.ResxPath)" LogicalName="%(_FableLocResult.LogicalName)" Condition="'%(_FableLocResult.AutoIncludeResx)' == 'true'" />
+      
+      <FileWrites Include="%(_FableLocResult.FsPath)" />
+      <FileWrites Include="%(_FableLocResult.ResxPath)" />
+    </ItemGroup>
+
+    
+    <!-- Clean up -->
+    <Delete Files="$(_ResponseFilePath);$(_OutFilePath)" />
+    
+  </Target>
+
+</Project>
