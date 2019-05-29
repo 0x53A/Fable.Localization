@@ -7,7 +7,7 @@ build:
 environment:
   nodejs_version: "10.15.0"
   NUGET_API_KEY:
-    secure: 2Lzjvg9HqLnhDnPVUgiiewAdASR3HKdXjt6L+cZbK5xlve3iEsrhI8RGjbJgpF7q
+    secure: Qlc/LJ0zUBfFJ4bqh4X8WrWQjulaX6cWd7eN+p4Z61qIAIydMR/jasYxVjDs2a1O
 
 # Install scripts. (runs after repo cloning)
 #install:
