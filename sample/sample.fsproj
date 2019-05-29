@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <UseStandardResourceNames>true</UseStandardResourceNames>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- This will compile the txt to fs and resx -->
+    <FableLocalizedText Include="Loc.txt" />
+    <!-- Display it in VS -->
+    <None Include="Loc.txt" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="Fable.Localization" Version="0.0.667" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="4.6.2" />
+  </ItemGroup>
+  
+</Project>
