@@ -18,7 +18,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="FSharp.Core" Version="4.6.2" />
+    <PackageReference Include="FSharp.Core" Version="4.6.2" PrivateAssets="All" />
   </ItemGroup>
 
   <!-- workaround for https://github.com/nuget/home/issues/3891 -->

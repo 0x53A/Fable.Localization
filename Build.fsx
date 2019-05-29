@@ -34,49 +34,47 @@ let root = __SOURCE_DIRECTORY__
 let inline withWorkDir wd = DotNet.Options.withWorkingDirectory wd
 
 
+let packOne outDir fsproj v =
+    DotNet.pack (fun o ->
+        { o with    Configuration = DotNet.BuildConfiguration.Release
+                    OutputPath = Some outDir
+                    MSBuildParams = { MSBuild.CliArguments.Create() with Properties = ["Version",v; "PackageVersion",v] }
+        }) fsproj
+
+let pushOne f =
+    DotNet.nugetPush (fun o -> { o with
+                                    PushParams = { o.PushParams with
+                                                                    Source = Some "https://api.nuget.org/v3/index.json"
+                                                                    ApiKey = Some (Fake.Core.Environment.environVarOrFail "NUGET_API_KEY") } }) f
+
 let justBuild() =
-    DotNet.build (fun o -> { o with Configuration = DotNet.BuildConfiguration.Release }) (root @@ "src\\Fable.Localization.Tool\\Fable.Localization.Tool.fsproj")
-    DotNet.build (fun o -> { o with Configuration = DotNet.BuildConfiguration.Release }) (root @@ "src\\Fable.Localization\\Fable.Localization.fsproj")
+    let v = "0.0.1-local"
+
+    // dotnet pack does a build
+    packOne (root @@ "nupkg") (root @@ "src\\Fable.Localization.Tool\\Fable.Localization.Tool.fsproj") v
+    packOne (root @@ "nupkg") (root @@ "src\\Fable.Localization.Lib\\Fable.Localization.Lib.fsproj") v
+
+    do
+        let props = ["NuspecFile","nuspec\\Fable.Localization.nuspec"; "nuspecproperties",sprintf"version=%s" v;"PackageOutputPath",(root @@ "nupkg")]
+        DotNet.msbuild (fun o -> { o with MSBuildParams = { o.MSBuildParams with Targets=["pack"];Properties = props }}) (root @@ "src\\Fable.Localization\\Fable.Localization.csproj")
 
 let publishToNuget(v:string) =
 
-    // 1 - Fable.Localization.Tool
+    // dotnet pack does a build
+    packOne (root @@ "nupkg") (root @@ "src\\Fable.Localization.Tool\\Fable.Localization.Tool.fsproj") v
+    packOne (root @@ "nupkg") (root @@ "src\\Fable.Localization.Lib\\Fable.Localization.Lib.fsproj") v
+    
     do
-        // dotnet pack does a build
-        DotNet.pack (fun o ->
-            { o with    Configuration = DotNet.BuildConfiguration.Release
-                        OutputPath = Some (root @@ "nupkg" @@ "Fable.Localization.Tool")
-                        MSBuildParams = { MSBuild.CliArguments.Create() with Properties = ["Version",v; "PackageVersion",v] }
-            }) (root @@ "src\\Fable.Localization.Tool\\Fable.Localization.Tool.fsproj")
-        let nupkgs = System.IO.Directory.GetFiles(root @@ "nupkg" @@ "Fable.Localization.Tool", "*.nupkg", SearchOption.AllDirectories)
-        match nupkgs with
-        | [| |] -> failwith "found no nupkgs"
-        | [| f |] ->
-            DotNet.nugetPush (fun o -> { o with
-                                            PushParams = { o.PushParams with
-                                                                          Source = Some "https://api.nuget.org/v3/index.json"
-                                                                          ApiKey = Some (Fake.Core.Environment.environVarOrFail "NUGET_API_KEY") } }) f
-        | _ -> failwithf "found more than one nupkg"
+        let props = ["NuspecFile","nuspec\\Fable.Localization.nuspec"; "nuspecproperties",sprintf"version=%s" v;"PackageOutputPath",(root @@ "nupkg")]
+        DotNet.msbuild (fun o -> { o with MSBuildParams = { o.MSBuildParams with Targets=["pack"];Properties = props }}) (root @@ "src\\Fable.Localization\\Fable.Localization.csproj")
 
+    let nupkgs = [|
+        root @@ "nupkg" @@ ("Fable.Localization.Tool." + v + ".nupkg")
+        root @@ "nupkg" @@ ("Fable.Localization.Lib." + v + ".nupkg")
+        root @@ "nupkg" @@ ("Fable.Localization." + v + ".nupkg")
+    |]
 
-    // 2 - Fable.Localization
-    do
-        // dotnet pack does a build
-        DotNet.pack (fun o ->
-            { o with    Configuration = DotNet.BuildConfiguration.Release
-                        OutputPath = Some (root @@ "nupkg" @@ "Fable.Localization")
-                        MSBuildParams = { MSBuild.CliArguments.Create() with Properties = ["Version",v; "PackageVersion",v] }
-            }) (root @@ "src\\Fable.Localization\\Fable.Localization.fsproj")
-        let nupkgs = System.IO.Directory.GetFiles(root @@ "nupkg" @@ "Fable.Localization", "*.nupkg", SearchOption.AllDirectories)
-        match nupkgs with
-        | [| |] -> failwith "found no nupkgs"
-        | [| f |] ->
-            DotNet.nugetPush (fun o -> { o with
-                                            PushParams = { o.PushParams with
-                                                                          Source = Some "https://api.nuget.org/v3/index.json"
-                                                                          ApiKey = Some (Fake.Core.Environment.environVarOrFail "NUGET_API_KEY") } }) f
-        | _ -> failwithf "found more than one nupkg"
-
+    for f in nupkgs do pushOne f
 
 
 Target.create "BuildRelease" (fun _ ->

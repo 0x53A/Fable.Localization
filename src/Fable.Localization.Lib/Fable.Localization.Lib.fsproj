@@ -13,11 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fable.Localization.Tool" Version="$(Version)" ExcludeAssets="build;lib" PrivateAssets="None" Pack="True" />
-    <ProjectReference Include="..\Fable.Localization.Tool\Fable.Localization.Tool.fsproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Pack="true" ExcludeAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="FSharp.Core" Version="4.6.2" />
   </ItemGroup>
   
