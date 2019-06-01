@@ -11,6 +11,9 @@
 
   <ItemGroup>
     <None Include="build/Fable.Localization.Tool.targets" Pack="true" PackagePath="build" />
+    <Compile Include="Read.fs" />
+    <Compile Include="WriteResx.fs" />
+    <Compile Include="WriteFs.fs" />
   </ItemGroup>
   
   <ItemGroup>
