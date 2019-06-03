@@ -47,8 +47,7 @@ let pushOne f =
                                                                     Source = Some "https://api.nuget.org/v3/index.json"
                                                                     ApiKey = Some (Fake.Core.Environment.environVarOrFail "NUGET_API_KEY") } }) f
 
-let justBuild() =
-    let v = "0.0.1-local"
+let buildNupkg(v) =
 
     // dotnet pack does a build
     packOne (root @@ "nupkg") (root @@ "src\\Fable.Localization.Tool\\Fable.Localization.Tool.fsproj") v
@@ -60,15 +59,8 @@ let justBuild() =
         DotNet.msbuild (fun o -> { o with MSBuildParams = { o.MSBuildParams with Targets=["pack"];Properties = props }}) (root @@ "src\\Fable.Localization\\Fable.Localization.csproj")
 
 let publishToNuget(v:string) =
-
-    // dotnet pack does a build
-    packOne (root @@ "nupkg") (root @@ "src\\Fable.Localization.Tool\\Fable.Localization.Tool.fsproj") v
-    packOne (root @@ "nupkg") (root @@ "src\\Fable.Localization.Lib\\Fable.Localization.Lib.fsproj") v
     
-    do
-        let props = ["NuspecFile","nuspec\\Fable.Localization.nuspec"; "nuspecproperties",sprintf"version=%s" v;"PackageOutputPath",(root @@ "nupkg")]
-        DotNet.msbuild (fun o -> { o with MSBuildParams = { o.MSBuildParams with Targets=["Restore"];Properties = props }}) (root @@ "src\\Fable.Localization\\Fable.Localization.csproj")
-        DotNet.msbuild (fun o -> { o with MSBuildParams = { o.MSBuildParams with Targets=["pack"];Properties = props }}) (root @@ "src\\Fable.Localization\\Fable.Localization.csproj")
+    buildNupkg(v)
 
     let nupkgs = [|
         root @@ "nupkg" @@ ("Fable.Localization.Tool." + v + ".nupkg")
@@ -78,9 +70,10 @@ let publishToNuget(v:string) =
 
     for f in nupkgs do pushOne f
 
+let localVersion = "0.0.2-local"
 
 Target.create "BuildRelease" (fun _ ->
-    justBuild()
+    buildNupkg(localVersion)
 )
 
 Target.create "AppVeyor" (fun _ ->
@@ -97,10 +90,10 @@ Target.create "AppVeyor" (fun _ ->
             publishToNuget(version)
         else
             // other, unknown tag
-            justBuild()
+            buildNupkg(localVersion)
     else
         // no tag, just build
-        justBuild()
+        buildNupkg(localVersion)
 )
 
 Target.runOrDefault "BuildRelease"
