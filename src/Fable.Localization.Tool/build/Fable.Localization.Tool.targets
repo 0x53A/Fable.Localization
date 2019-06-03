@@ -21,7 +21,7 @@
     Name="Fable_Localization_BuildResxAndSourceFromTxt"
     BeforeTargets="CoreResGen;PrepareForBuild"
     AfterTargets="GenerateFSharpTextResources"
-    Inputs="@(FableLocalizedText)"
+    Inputs="@(FableLocalizedText);$(MSBuildThisFile);$(MSBuildProjectFullPath)"
     Outputs="@(_FableLocalizationOutputs)">
 
     <MakeDir Directories="$(IntermediateOutputPath)" />
