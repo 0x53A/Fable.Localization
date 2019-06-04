@@ -99,11 +99,11 @@ let private resourceProvider = lazy (
     }
 )
 
-let fromAssembly(defaultLang:Language) : ILocalizationProvider<ILoc> =
+let fromAssembly(defaultLang:Language) : ILocalizationProvider<%s> =
     let mutable currentLang = defaultLang
     let mutable current = fromProvider(resourceProvider.Value, defaultLang)
     let languageChangedEvent = Event<_>()
-    { new ILocalizationProvider<ILoc> with
+    { new ILocalizationProvider<%s> with
         member __.ForLanguage(l) = fromProvider(resourceProvider.Value, l)
         member __.Current = current
       interface ILocalizationAware with
@@ -115,7 +115,7 @@ let fromAssembly(defaultLang:Language) : ILocalizationProvider<ILoc> =
     }
 
 
-let allKeys = [|"""
+let allKeys = [|""" interfaceName interfaceName
 
     for line in stringInfos do
         fprintfn out """    "%s";""" line.Identifier
