@@ -70,7 +70,8 @@ let publishToNuget(v:string) =
 
     for f in nupkgs do pushOne f
 
-let localVersion = "0.0.2-local"
+let now = DateTime.Now
+let localVersion = sprintf "0.0.1-local-%i" now.Ticks
 
 Target.create "BuildRelease" (fun _ ->
     buildNupkg(localVersion)
