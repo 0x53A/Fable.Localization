@@ -10,8 +10,8 @@
     <dependencies>
       <group targetFramework=".NETStandard2.0">
         <dependency id="FSharp.Core" version="4.6.2" />
-        <dependency id="Fable.Localization.Tool" version="$version$" />
-        <dependency id="Fable.Localization.Lib" version="$version$" />
+        <dependency id="Fable.Localization.Tool" version="[$version$]" />
+        <dependency id="Fable.Localization.Lib" version="[$version$]" />
       </group>
     </dependencies>
   </metadata>
