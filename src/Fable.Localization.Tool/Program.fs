@@ -1,9 +1,25 @@
 ﻿open System
 open System.IO
 
+open Argu
+
 open Read
 open WriteResx
 open WriteFs
+
+type CLI_Args =
+| [<ArguAttributes.ExactlyOnceAttribute>] Input of string
+| [<ArguAttributes.ExactlyOnceAttribute>] Output of string
+| [<ArguAttributes.ExactlyOnceAttribute>] ObjDir of string
+| [<ArguAttributes.ExactlyOnceAttribute>] InputFiles of string
+with
+    interface IArgParserTemplate with
+        member s.Usage =
+            match s with
+            | Input _ -> "The command file which contains one line per file to parse."
+            | Output _ -> "The output file, for each input the tool will output one line."
+            | ObjDir _ -> "The 'IntermediateOutputPath' of the project."
+            | InputFiles _ -> "All input files, the tool will calculate the timestamp from them."
 
 /// one input row when called from msbuild
 type InputRow = {
@@ -27,7 +43,7 @@ type OutputRow = {
 
 // copied from https://github.com/dotnet/fsharp/blob/ccb913d3a05863e5b1861d64994ffb97ed498855/src/fsharp/FSharp.Build/FSharpEmbedResourceText.fs
 
-let transform (input : InputRow) objDir : OutputRow =
+let transform (input : InputRow) objDir timestamp : OutputRow =
 
     // -----------------------------------------------------------------------------------------------------------------
     // START Processing
@@ -92,14 +108,16 @@ let transform (input : InputRow) objDir : OutputRow =
     // save or touch
     let fsBytes = outStream.ToArray()
     let resxBytes = outXmlStream.ToArray()
-    let inputFileTimestamp = File.GetLastWriteTime(input.TxtFilePath)
+    //let inputFileTimestamp = File.GetLastWriteTime(input.TxtFilePath)
 
     let overwriteOrTouch file content =
         if File.Exists file then
             let oldContent = File.ReadAllBytes file
             if oldContent = content then
                 // touch
-                File.SetLastWriteTime(file, inputFileTimestamp.AddSeconds(1.))
+                let ts = File.GetLastWriteTime file
+                if ts < timestamp then
+                    File.SetLastWriteTime(file, DateTime.Now)
             else
                 File.WriteAllBytes(file, content)
         else
@@ -121,15 +139,19 @@ let transform (input : InputRow) objDir : OutputRow =
 
 [<EntryPoint>]
 let main argv =
-    if argv.Length <> 3 then
-        eprintfn "Error: Expected two arguments (in-file, out-file, obj-dir), but got %i: %A" argv.Length argv
-        exit 1
 
     try
 
-        let inFilePath = argv.[0]
-        let outFilePath = argv.[1]
-        let objDir = argv.[2]
+        let parser = Argu.ArgumentParser.Create<CLI_Args>()
+        let cli = parser.ParseCommandLine()
+
+        let inFilePath = cli.GetResult CLI_Args.Input
+        let outFilePath = cli.GetResult CLI_Args.Output
+        let objDir = cli.GetResult CLI_Args.ObjDir
+        let inputsString = cli.GetResult CLI_Args.InputFiles
+        let inputs = inputsString.Split(';')
+
+        let timestamp = [ for i in inputs -> File.GetLastWriteTime i ] |> Seq.max
 
         let inFileLines =
             File.ReadAllLines inFilePath
@@ -159,7 +181,7 @@ let main argv =
         |]
 
         let outRows = [|
-            for r in inFiles -> transform r objDir
+            for r in inFiles -> transform r objDir timestamp
         |]
 
         let outLines = [|

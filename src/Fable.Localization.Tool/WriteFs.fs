@@ -16,12 +16,10 @@ open System
 open System.Collections.Generic
 
 
-#if NO_NETFX_RESOURCE_MANAGER || FABLE_COMPILER
 type Language = string
-#else
-type Language = System.Globalization.CultureInfo
-#endif
 
+/// If set to true, then all error messages will just return the filled 'holes' delimited by ',,,'s - this is for language-neutral testing (e.g. localization-invariant baselines).
+let mutable SwallowResourceText = false
 
 /// support switching languages
 type ILocalizationAware =
@@ -59,9 +57,14 @@ let fromProvider (p:IRawStringProvider, l:Language) =
     { new %s with""" interfaceName
     for line in stringInfos do
         let args = [| for i in 0 .. line.Holes.Length - 1 -> sprintf "a%i" i |]
+        let swallowedText = ",,," + ([| for i in 0 .. line.Holes.Length - 1 -> sprintf "{%i}" i |] |> String.concat ",,,") + ",,,"
         fprintfn out """        member __.%s(%s) =
-            let fmt = p.GetString(l, "%s")
-            String.Format(fmt%s)""" line.Identifier (args |> String.concat ", ") line.Identifier (if args = [||] then "" else ", " + (args |> String.concat ", "))
+            let fmt =
+                if SwallowResourceText then
+                    "%s"
+                else
+                    p.GetString(l, "%s")
+            String.Format(fmt%s)""" line.Identifier (args |> String.concat ", ") swallowedText line.Identifier (if args = [||] then "" else ", " + (args |> String.concat ", "))
             
     fprintfn out """    }
 
@@ -95,7 +98,7 @@ let getStringFromResources(name, cultureInfo) =
 
 let private resourceProvider = lazy (
     { new IRawStringProvider with
-        member x.GetString(lang, name) = getStringFromResources(name, Some lang)
+        member x.GetString(lang, name) = getStringFromResources(name, Some(System.Globalization.CultureInfo lang))
     }
 )
 

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <IsTool>true</IsTool>
-    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     
     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
     <DisableImplicitSystemValueTupleReference>true</DisableImplicitSystemValueTupleReference>
@@ -21,7 +21,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="FSharp.Core" Version="4.6.2" PrivateAssets="All" />
+    <PackageReference Include="Argu" Version="5.4.0" PrivateAssets="All" Publish="true" />
+    <PackageReference Include="FSharp.Core" Version="4.6.2" PrivateAssets="All" Publish="true" />
   </ItemGroup>
 
   <!-- workaround for https://github.com/nuget/home/issues/3891 -->
@@ -30,8 +31,7 @@
   </PropertyGroup>
   <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences">
     <ItemGroup>
-      <!-- Note: this is too much, just FSharp.Core should be enough, but whatever -->
-      <BuildOutputInPackage Include="%(Reference.Identity)" Condition=" '%(Reference.Filename)' == 'FSharp.Core' " />
+      <BuildOutputInPackage Include="%(Reference.Identity)" Condition=" '%(Reference.Filename)' == 'FSharp.Core' or '%(Reference.Filename)' == 'Argu' or '%(Reference.Filename)' == 'System.Configuration.ConfigurationManager' or '%(Reference.Filename)' == 'System.Security.Cryptography.ProtectedData' " />
     </ItemGroup>
   </Target>
 

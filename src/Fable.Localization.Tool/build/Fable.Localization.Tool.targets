@@ -32,8 +32,12 @@
 
     <WriteLinesToFile File="$(_FableLoc_ResponseFilePath)" Lines="@(_ResponseFileLines)" Overwrite="true" />
 
+    <PropertyGroup>
+      <IntermediateOutputPath_NoTerminatingBackslash>$(IntermediateOutputPath.TrimEnd('\'))</IntermediateOutputPath_NoTerminatingBackslash>
+    </PropertyGroup>
+    
     <!-- first arg is the IN file, second arg is the OUT file, third arg is obj dir -->
-    <Exec Command="dotnet $(_FableLocToolDllPath) $(_FableLoc_ResponseFilePath) $(_FableLoc_OutFilePath) $(IntermediateOutputPath)" />
+    <Exec Command='dotnet "$(_FableLocToolDllPath)" --input "$(_FableLoc_ResponseFilePath)" --output "$(_FableLoc_OutFilePath)" --objdir "$(IntermediateOutputPath_NoTerminatingBackslash)" --inputfiles "@(FableLocalizedText);$(MSBuildThisFile);$(MSBuildProjectFullPath)"' />
 
   </Target>
 
@@ -74,6 +78,12 @@
         Include="%(_FableLocResult.ResxPath)"
         LogicalName="%(_FableLocResult.LogicalName)"
         Condition="'%(_FableLocResult.AutoIncludeResx)' == 'true'"
+        ManifestResourceName="$([System.IO.Path]::GetFileNameWithoutExtension('%(_FableLocResult.ResxPath)'))"
+        SourceDocumentPath="%(_FableLocResult.TxtPath)"/>
+      <EmbeddedResource
+        Update="%(_FableLocResult.ResxPath)"
+        LogicalName="%(_FableLocResult.LogicalName)"
+        Condition="'%(_FableLocResult.AutoIncludeResx)' != 'true'"
         ManifestResourceName="$([System.IO.Path]::GetFileNameWithoutExtension('%(_FableLocResult.ResxPath)'))"
         SourceDocumentPath="%(_FableLocResult.TxtPath)"/>
 
