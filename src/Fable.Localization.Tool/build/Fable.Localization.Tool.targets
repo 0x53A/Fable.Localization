@@ -37,7 +37,7 @@
     </PropertyGroup>
     
     <!-- first arg is the IN file, second arg is the OUT file, third arg is obj dir -->
-    <Exec Command='dotnet "$(_FableLocToolDllPath)" --input "$(_FableLoc_ResponseFilePath)" --output "$(_FableLoc_OutFilePath)" --objdir "$(IntermediateOutputPath_NoTerminatingBackslash)" --inputfiles "@(FableLocalizedText);$(MSBuildThisFile);$(MSBuildProjectFullPath)"' />
+    <Exec Command='dotnet "$(_FableLocToolDllPath)" --input "$(_FableLoc_ResponseFilePath)" --output "$(_FableLoc_OutFilePath)" --objdir "$(IntermediateOutputPath_NoTerminatingBackslash)" --rootnamespace "$(RootNamespace)" --inputfiles "@(FableLocalizedText);$(MSBuildThisFile);$(MSBuildProjectFullPath)"' />
 
   </Target>
 
@@ -78,13 +78,6 @@
         Include="%(_FableLocResult.ResxPath)"
         LogicalName="%(_FableLocResult.LogicalName)"
         Condition="'%(_FableLocResult.AutoIncludeResx)' == 'true'"
-        ManifestResourceName="$([System.IO.Path]::GetFileNameWithoutExtension('%(_FableLocResult.ResxPath)'))"
-        SourceDocumentPath="%(_FableLocResult.TxtPath)"/>
-      <EmbeddedResource
-        Update="%(_FableLocResult.ResxPath)"
-        LogicalName="%(_FableLocResult.LogicalName)"
-        Condition="'%(_FableLocResult.AutoIncludeResx)' != 'true'"
-        ManifestResourceName="$([System.IO.Path]::GetFileNameWithoutExtension('%(_FableLocResult.ResxPath)'))"
         SourceDocumentPath="%(_FableLocResult.TxtPath)"/>
 
       <FileWrites Include="%(_FableLocResult.FsPath)" />

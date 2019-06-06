@@ -4,7 +4,7 @@ open System.IO
 open Read
 
 
-let genFs (outStream:Stream) filename justfilename outFsFilename visibility printMessage (stringInfos:ParsedLine array) =
+let genFs (outStream:Stream) filename justfilename outFsFilename visibility printMessage (stringInfos:ParsedLine array) rootNamespace =
     use out = new StreamWriter(outStream)
     fprintfn out "// This is a generated file; the original input is '%s'" filename
     fprintfn out "module %s %s" visibility justfilename
@@ -65,7 +65,11 @@ let fromProvider (p:IRawStringProvider, l:Language) =
                 else
                     p.GetString(l, "%s")
             String.Format(fmt%s)""" line.Identifier (args |> String.concat ", ") swallowedText line.Identifier (if args = [||] then "" else ", " + (args |> String.concat ", "))
-            
+    
+    let resourceName =
+        match rootNamespace with
+        | null | "" -> justfilename
+        | _ -> sprintf "%s.%s" rootNamespace justfilename
     fprintfn out """    }
 
 let private failUnknownKey name =
@@ -79,7 +83,7 @@ let private failUnknownKey name =
 
 let private resources = lazy (
     let currentAssembly = System.Reflection.Assembly.GetExecutingAssembly()
-    new System.Resources.ResourceManager("Loc", currentAssembly)
+    new System.Resources.ResourceManager("%s", currentAssembly)
 )
                 
 // newlines and tabs get converted to strings when read from a resource file
@@ -118,7 +122,7 @@ let fromAssembly(defaultLang:Language) : ILocalizationProvider<%s> =
     }
 
 
-let allKeys = [|""" interfaceName interfaceName
+let allKeys = [|""" resourceName interfaceName interfaceName
 
     for line in stringInfos do
         fprintfn out """    "%s";""" line.Identifier

@@ -11,6 +11,7 @@ type CLI_Args =
 | [<ArguAttributes.ExactlyOnceAttribute>] Input of string
 | [<ArguAttributes.ExactlyOnceAttribute>] Output of string
 | [<ArguAttributes.ExactlyOnceAttribute>] ObjDir of string
+| [<ArguAttributes.ExactlyOnceAttribute>] RootNamespace of string
 | [<ArguAttributes.ExactlyOnceAttribute>] InputFiles of string
 with
     interface IArgParserTemplate with
@@ -19,6 +20,7 @@ with
             | Input _ -> "The command file which contains one line per file to parse."
             | Output _ -> "The output file, for each input the tool will output one line."
             | ObjDir _ -> "The 'IntermediateOutputPath' of the project."
+            | RootNamespace _ -> "The 'RootNamespace' of the project."
             | InputFiles _ -> "All input files, the tool will calculate the timestamp from them."
 
 /// one input row when called from msbuild
@@ -43,7 +45,7 @@ type OutputRow = {
 
 // copied from https://github.com/dotnet/fsharp/blob/ccb913d3a05863e5b1861d64994ffb97ed498855/src/fsharp/FSharp.Build/FSharpEmbedResourceText.fs
 
-let transform (input : InputRow) objDir timestamp : OutputRow =
+let transform (input : InputRow) objDir rootNamespace timestamp : OutputRow =
 
     // -----------------------------------------------------------------------------------------------------------------
     // START Processing
@@ -99,7 +101,7 @@ let transform (input : InputRow) objDir timestamp : OutputRow =
             
     printMessage (sprintf "Generating %s" outFsFilename)
     use outStream = new MemoryStream()
-    genFs outStream filename justfilename outFsFilename visibility printMessage stringInfos
+    genFs outStream filename justfilename outFsFilename visibility printMessage stringInfos rootNamespace
     
     printMessage (sprintf "Generating .resx for %s" outFsFilename)
     use outXmlStream = new MemoryStream()
@@ -148,6 +150,7 @@ let main argv =
         let inFilePath = cli.GetResult CLI_Args.Input
         let outFilePath = cli.GetResult CLI_Args.Output
         let objDir = cli.GetResult CLI_Args.ObjDir
+        let rootNamespace = cli.GetResult CLI_Args.RootNamespace
         let inputsString = cli.GetResult CLI_Args.InputFiles
         let inputs = inputsString.Split(';')
 
@@ -181,7 +184,7 @@ let main argv =
         |]
 
         let outRows = [|
-            for r in inFiles -> transform r objDir timestamp
+            for r in inFiles -> transform r objDir rootNamespace timestamp
         |]
 
         let outLines = [|
