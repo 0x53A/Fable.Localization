@@ -19,8 +19,7 @@ let genJs (outJsStream:Stream) (stringInfos:ParsedLine array) (pathToNeutralResx
     let filenamePart = Path.GetFileNameWithoutExtension(pathToNeutralResx)
     let dirPart = Path.GetDirectoryName(pathToNeutralResx)
 
-    let allRelevantResx = [|
-        yield "", pathToNeutralResx
+    let allSpecializedResx = [|
         for fullPath in Directory.GetFiles(dirPart, filenamePart + ".*.resx") ->
             let filename = Path.GetFileNameWithoutExtension(fullPath)
             let lang = filename.Substring(filenamePart.Length + 1)
@@ -38,11 +37,13 @@ let genJs (outJsStream:Stream) (stringInfos:ParsedLine array) (pathToNeutralResx
         ]
         Map entries
 
+    let neutralKVs =  loadDictFromResx pathToNeutralResx
     let resourcesDict = Dictionary()
-    for lang, fullPath in allRelevantResx do
-        resourcesDict.[lang] <- loadDictFromResx fullPath
-
-    // fill up míssing entries with neutral resx
+    for lang, fullPath in allSpecializedResx do
+        let languageSpecificKVs = loadDictFromResx fullPath
+        // merge the two dicts
+        resourcesDict.[lang] <- Map(Seq.concat [ (Map.toSeq neutralKVs) ; (Map.toSeq languageSpecificKVs) ]) 
+    resourcesDict.[""] <- neutralKVs
 
     let jsonForDict = Newtonsoft.Json.JsonConvert.SerializeObject(resourcesDict)
 
