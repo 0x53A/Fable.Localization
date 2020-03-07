@@ -14,6 +14,8 @@
 
       <_FableLocalizationOutputs Include="%(FableLocalizedText.ResourceOutputFilePath)" Condition=" '%(FableLocalizedText.ResourceOutputFilePath)' != '' " />
       <_FableLocalizationOutputs Include="$(IntermediateOutputPath)%(FableLocalizedText.Filename).resx" Condition=" '%(FableLocalizedText.ResourceOutputFilePath)' == '' " />
+      
+      <_FableLocalizationOutputs Include="%(FableLocalizedText.JsOutputFilePath)" Condition=" '%(FableLocalizedText.JsOutputFilePath)' != '' " />
     </ItemGroup>
   </Target>
 
@@ -27,7 +29,7 @@
     <MakeDir Directories="$(IntermediateOutputPath)" />
 
     <ItemGroup>
-      <_ResponseFileLines Include="@(FableLocalizedText->'%(Identity);%(LogicalName);%(SourceVisibility);%(SourceOutputFilePath);%(ResourceOutputFilePath)')" />
+      <_ResponseFileLines Include="@(FableLocalizedText->'%(Identity);%(LogicalName);%(SourceVisibility);%(SourceOutputFilePath);%(ResourceOutputFilePath);%(JsOutputFilePath)')" />
     </ItemGroup>
 
     <WriteLinesToFile File="$(_FableLoc_ResponseFilePath)" Lines="@(_ResponseFileLines)" Overwrite="true" />
@@ -61,8 +63,9 @@
         <LogicalName>$([System.String]::Copy('%(_FableLocResultLines.Identity)').Split(';')[1])</LogicalName>
         <FsPath>$([System.String]::Copy('%(_FableLocResultLines.Identity)').Split(';')[2])</FsPath>
         <ResxPath>$([System.String]::Copy('%(_FableLocResultLines.Identity)').Split(';')[3])</ResxPath>
-        <AutoIncludeFs>$([System.String]::Copy('%(_FableLocResultLines.Identity)').Split(';')[4])</AutoIncludeFs>
-        <AutoIncludeResx>$([System.String]::Copy('%(_FableLocResultLines.Identity)').Split(';')[5])</AutoIncludeResx>
+        <JsPath>$([System.String]::Copy('%(_FableLocResultLines.Identity)').Split(';')[4])</JsPath>
+        <AutoIncludeFs>$([System.String]::Copy('%(_FableLocResultLines.Identity)').Split(';')[5])</AutoIncludeFs>
+        <AutoIncludeResx>$([System.String]::Copy('%(_FableLocResultLines.Identity)').Split(';')[6])</AutoIncludeResx>
       </_FableLocResult>
 
     </ItemGroup>
@@ -82,6 +85,7 @@
 
       <FileWrites Include="%(_FableLocResult.FsPath)" />
       <FileWrites Include="%(_FableLocResult.ResxPath)" />
+      <FileWrites Include="%(_FableLocResult.JsPath)" Condition=" '%(_FableLocResult.JsPath)' != '' " />
 
       <FileWrites Include="$(_FableLoc_ResponseFilePath)" />
       <FileWrites Include="$(_FableLoc_OutFilePath)" />

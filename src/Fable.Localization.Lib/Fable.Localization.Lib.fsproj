@@ -9,11 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Library.fs" />
+    <Compile Include="Giraffe.fs" />
+    <Compile Include="LocalizedStringComponent.fs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Fable.React" Version="5.2.3" />
     <PackageReference Include="FSharp.Core" Version="4.6.2" />
+    <PackageReference Include="Giraffe" Version="3.6.0" />
   </ItemGroup>
   
   <!-- This package doesn't contain actual code

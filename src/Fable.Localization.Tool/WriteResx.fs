@@ -2,6 +2,7 @@
 
 open Read
 open System.IO
+open System.Text
 
 
 
@@ -138,4 +139,5 @@ let genResx (outXmlStream:Stream) (stringInfos:ParsedLine array) =
         xnc.AppendChild(xd.CreateTextNode line.NetFormatString) |> ignore
         xd.LastChild.AppendChild xn |> ignore
     )
-    xd.Save outXmlStream
+    use sw = new StreamWriter(outXmlStream, Encoding.UTF8)
+    xd.Save sw

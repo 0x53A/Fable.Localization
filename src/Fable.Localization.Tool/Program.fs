@@ -6,6 +6,7 @@ open Argu
 open Read
 open WriteResx
 open WriteFs
+open WriteJs
 
 type CLI_Args =
 | [<ArguAttributes.ExactlyOnceAttribute>] Input of string
@@ -30,6 +31,7 @@ type InputRow = {
     SourceVisibility : string
     SourceOutputFilePath : string
     ResourceOutputFilePath : string
+    JsOutputFilePath : string
 }
 
 /// one output row returning to msbuild
@@ -38,6 +40,7 @@ type OutputRow = {
     LogicalName : string
     FsPath : string
     ResxPath : string
+    JsPath : string
     AutoIncludeFs : string
     AutoIncludeResx : string
 }
@@ -63,6 +66,11 @@ let transform (input : InputRow) objDir rootNamespace timestamp : OutputRow =
             Path.Combine(objDir, justfilename + ".resx"), true
         else
             input.ResourceOutputFilePath, false
+    let outJsFilename = 
+        if String.IsNullOrWhiteSpace input.JsOutputFilePath then
+            None
+        else
+            Some input.JsOutputFilePath
 
     let visibility =
         match input.SourceVisibility with
@@ -98,6 +106,24 @@ let transform (input : InputRow) objDir rootNamespace timestamp : OutputRow =
             let prevLine,prevIdent = allStrs.[line.OriginalString]
             Err(filename,line.LineNumber,sprintf "String '%s' already appears on line %d with identifier '%s' - each string must be unique" line.OriginalString prevLine prevIdent)
         allStrs.Add(line.OriginalString,(line.LineNumber,line.Identifier))
+    let normalizeText (b:byte array) : byte array =
+        let text = System.Text.Encoding.UTF8.GetString(b)
+        let normalizedText = text.Replace("\r\n", "\n").Replace("\n", Environment.NewLine)
+        System.Text.Encoding.UTF8.GetBytes(normalizedText)
+    let overwriteOrTouch file content =
+        let content = normalizeText content
+        if File.Exists file then
+            let oldContent = File.ReadAllBytes file
+            let oldContent = normalizeText oldContent
+            if oldContent = content then
+                // touch
+                let ts = File.GetLastWriteTime file
+                if ts < timestamp then
+                    File.SetLastWriteTime(file, DateTime.Now)
+            else
+                File.WriteAllBytes(file, content)
+        else
+            File.WriteAllBytes(file, content)
             
     printMessage (sprintf "Generating %s" outFsFilename)
     use outStream = new MemoryStream()
@@ -111,22 +137,18 @@ let transform (input : InputRow) objDir rootNamespace timestamp : OutputRow =
     let fsBytes = outStream.ToArray()
     let resxBytes = outXmlStream.ToArray()
     //let inputFileTimestamp = File.GetLastWriteTime(input.TxtFilePath)
-
-    let overwriteOrTouch file content =
-        if File.Exists file then
-            let oldContent = File.ReadAllBytes file
-            if oldContent = content then
-                // touch
-                let ts = File.GetLastWriteTime file
-                if ts < timestamp then
-                    File.SetLastWriteTime(file, DateTime.Now)
-            else
-                File.WriteAllBytes(file, content)
-        else
-            File.WriteAllBytes(file, content)
             
     overwriteOrTouch outFsFilename fsBytes
     overwriteOrTouch outXmlFilename resxBytes
+    
+    match outJsFilename with
+    | Some js ->
+        printMessage (sprintf "Generating .js for %s" outFsFilename)
+        use outJsStream = new MemoryStream()
+        genJs outJsStream stringInfos outXmlFilename
+        let jsBytes = outJsStream.ToArray()
+        overwriteOrTouch js jsBytes
+    | None -> ()
 
     printMessage (sprintf "Done %s" outFsFilename)
 
@@ -135,6 +157,7 @@ let transform (input : InputRow) objDir rootNamespace timestamp : OutputRow =
         LogicalName = input.LogicalName
         FsPath = outFsFilename
         ResxPath = outXmlFilename
+        JsPath = outJsFilename |> Option.defaultValue ""
         AutoIncludeFs = if autoIncludeFs then "true" else "false"
         AutoIncludeResx = if autoIncludeResx then "true" else "false"
     }
@@ -163,8 +186,8 @@ let main argv =
         let inFiles = [|
             for l in inFileLines ->
             let segments = l.Split(';')
-            if segments.Length <> 5 then
-                failwithf "Error: Malformed input file. Expected 5 semi-colon sperated columns, but got %i: %A" segments.Length segments
+            if segments.Length <> 6 then
+                failwithf "Error: Malformed input file. Expected 6 semi-colon sperated columns, but got %i: %A" segments.Length segments
             
             let r = {
                 TxtFilePath = segments.[0]
@@ -172,6 +195,7 @@ let main argv =
                 SourceVisibility = segments.[2]
                 SourceOutputFilePath = segments.[3]
                 ResourceOutputFilePath = segments.[4]
+                JsOutputFilePath = segments.[5]
             }
 
             // validate
@@ -179,7 +203,7 @@ let main argv =
                 failwithf "Error: File '%s' does not exist." r.TxtFilePath
             if r.SourceVisibility <> "" && r.SourceVisibility <> "Public" && r.SourceVisibility <> "Internal" then
                 failwithf "Error: Entry '%s' has an invalid 'SourceVisibility'. Expected 'Public' or 'Internal' but got '%s'" r.TxtFilePath r.SourceVisibility
-                
+            
             r
         |]
 
@@ -188,7 +212,7 @@ let main argv =
         |]
 
         let outLines = [|
-            for r in outRows -> sprintf "%s;%s;%s;%s;%s;%s" r.TxtPath r.LogicalName r.FsPath r.ResxPath r.AutoIncludeFs r.AutoIncludeResx
+            for r in outRows -> sprintf "%s;%s;%s;%s;%s;%s;%s" r.TxtPath r.LogicalName r.FsPath r.ResxPath r.JsPath r.AutoIncludeFs r.AutoIncludeResx
         |]
 
         File.WriteAllLines(outFilePath, outLines)

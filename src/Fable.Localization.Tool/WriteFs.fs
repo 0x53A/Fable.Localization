@@ -2,10 +2,11 @@
 
 open System.IO
 open Read
+open System.Text
 
 
 let genFs (outStream:Stream) filename justfilename outFsFilename visibility printMessage (stringInfos:ParsedLine array) rootNamespace =
-    use out = new StreamWriter(outStream)
+    use out = new StreamWriter(outStream, Encoding.UTF8)
     fprintfn out "// This is a generated file; the original input is '%s'" filename
     fprintfn out "module %s %s" visibility justfilename
     fprintfn out ""

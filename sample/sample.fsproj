@@ -7,24 +7,24 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- This will compile the txt to fs and resx -->
+    <FableLocalizedText Include="Loc.txt" SourceOutputFilePath="Loc.fs" ResourceOutputFilePath="Loc.resx" JsOutputFilePath="Loc.js" SourceVisibility="Public" />
+
+    <!-- Display it in VS -->
+    <None Include="Loc.txt" />
+
+    <Compile Include="Loc.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- This will compile the txt to fs and resx -->
-    <FableLocalizedText Include="Loc.txt" />
-    <!-- Display it in VS -->
-    <None Include="Loc.txt" />
-  </ItemGroup>
-
-
-  <ItemGroup>
-    <PackageReference Include="Fable.Localization" Version="0.0.667" />
+    <PackageReference Include="Fable.Localization" Version="0.0.1-local-637191987643212254" />
+    <PackageReference Include="Fable.React" Version="5.2.3" />
   </ItemGroup>
 
 
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.6.2" />
   </ItemGroup>
-  
+
 </Project>

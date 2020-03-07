@@ -1,9 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <IsTool>true</IsTool>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
     
     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
     <DisableImplicitSystemValueTupleReference>true</DisableImplicitSystemValueTupleReference>
@@ -12,6 +13,7 @@
   <ItemGroup>
     <None Include="build/Fable.Localization.Tool.targets" Pack="true" PackagePath="build" />
     <Compile Include="Read.fs" />
+    <Compile Include="WriteJs.fs" />
     <Compile Include="WriteResx.fs" />
     <Compile Include="WriteFs.fs" />
   </ItemGroup>
@@ -23,6 +25,7 @@
   <ItemGroup>
     <PackageReference Include="Argu" Version="5.4.0" PrivateAssets="All" Publish="true" />
     <PackageReference Include="FSharp.Core" Version="4.6.2" PrivateAssets="All" Publish="true" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
   </ItemGroup>
 
   <!-- workaround for https://github.com/nuget/home/issues/3891 -->
@@ -31,7 +34,7 @@
   </PropertyGroup>
   <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences">
     <ItemGroup>
-      <BuildOutputInPackage Include="%(Reference.Identity)" Condition=" '%(Reference.Filename)' == 'FSharp.Core' or '%(Reference.Filename)' == 'Argu' or '%(Reference.Filename)' == 'System.Configuration.ConfigurationManager' or '%(Reference.Filename)' == 'System.Security.Cryptography.ProtectedData' " />
+      <BuildOutputInPackage Include="%(Reference.Identity)" Condition=" '%(Reference.Filename)' == 'FSharp.Core' or '%(Reference.Filename)' == 'Argu' or '%(Reference.Filename)' == 'System.Configuration.ConfigurationManager' or '%(Reference.Filename)' == 'System.Security.Cryptography.ProtectedData' or '%(Reference.Filename)' == 'Newtonsoft.Json' or '%(Reference.Filename)' == 'XXXX' or '%(Reference.Filename)' == 'XXXX' or '%(Reference.Filename)' == 'XXXX' or '%(Reference.Filename)' == 'XXXX' " />
     </ItemGroup>
   </Target>
 
