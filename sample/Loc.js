@@ -1,1 +1,1 @@
-﻿export default {"":{"Hello":{"Item1":"Hello","Item2":"World!"},"Hi":{"Item1":"Hi","Item2":"Hello {0}!"},"Many":{"Item1":"Many","Item2":"1 {0}, 2 {1}, 3 {2}, 4 {3}"}},"ex":{"Hello":{"Item1":"Hello","Item2":"World!"},"Hi":{"Item1":"Hi","Item2":"Hello {0}!"},"Many":{"Item1":"Many","Item2":"1 {0}, 2 {1}, 3 {2}, 4 {3}"}}};
+﻿export default {"ex":{"Hello":"World!","Hi":"Hello {0}!","Many":"1 {0}, 2 {1}, 3 {2}, 4 {3}"},"":{"Hello":"World!","Hi":"Hello {0}!","Many":"1 {0}, 2 {1}, 3 {2}, 4 {3}"}};

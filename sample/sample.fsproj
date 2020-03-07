@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fable.Localization" Version="0.0.1-local-637191987643212254" />
+    <PackageReference Include="Fable.Localization" Version="0.0.1-local-637192005138023586" />
     <PackageReference Include="Fable.React" Version="5.2.3" />
   </ItemGroup>
 

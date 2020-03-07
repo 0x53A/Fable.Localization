@@ -31,7 +31,7 @@ let genJs (outJsStream:Stream) (stringInfos:ParsedLine array) (pathToNeutralResx
         let entries = [
             for entry : DictionaryEntry in reader |> Seq.cast<DictionaryEntry> do
                 match entry.Key, entry.Value with
-                | :? string as k, :? string as v ->
+                | (:? string as k), (:? string as v) ->
                     yield k, v
                 | _, _ -> ()
         ]
