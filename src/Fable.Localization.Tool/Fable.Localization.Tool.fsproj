@@ -25,7 +25,7 @@
   <ItemGroup>
     <PackageReference Include="Argu" Version="5.4.0" PrivateAssets="All" Publish="true" />
     <PackageReference Include="FSharp.Core" Version="4.6.2" PrivateAssets="All" Publish="true" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
   </ItemGroup>
 
   <!-- workaround for https://github.com/nuget/home/issues/3891 -->
